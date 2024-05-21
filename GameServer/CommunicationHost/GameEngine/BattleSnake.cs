@@ -122,7 +122,7 @@ namespace CommunicationHost.GameEngine
             GameUpdateMessage message = null;
             while (_gameRunning)
             {
-                await Task.Delay(1000);
+                await Task.Delay(300);
                 await DoLocked(async () => await _tick.ProcessMoves(_players, disconnectedPlayers));
                 message = _tick.GetMessage();
                 _tick = new Tick(_map);
