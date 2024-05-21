@@ -27,13 +27,21 @@ namespace CommunicationHost.Model
         public async Task<GameUpdateMessage> ProcessMoves(List<Player> players, List<string> disconnectedPlayers)
         {
             await Console.Out.WriteLineAsync($"processing {_moves.Count} moves");
+            _map.VerifyCurrentGamestate(players);
             HandleDisconnectedPlayers(players, disconnectedPlayers);
+            _map.VerifyCurrentGamestate(players);
             HandleSplits(players);
+            _map.VerifyCurrentGamestate(players);
             HandleIllegalMoves(players);
+            _map.VerifyCurrentGamestate(players);
             HandleHomeComing(players);
+            _map.VerifyCurrentGamestate(players);
             HandleCollisions(players);
+            _map.VerifyCurrentGamestate(players);
             HandleMoves(players);
+            _map.VerifyCurrentGamestate(players);
             HandlePlayerScores(players);
+            _map.VerifyCurrentGamestate(players);
             await Console.Out.WriteLineAsync($"Current Tick results in {_updateMessage.UpdatedCells.Count} updates");
             return _updateMessage;
         }
@@ -81,6 +89,9 @@ namespace CommunicationHost.Model
                     Console.WriteLine($"Unable to process moves for player with Id: {split.PlayerIdentifier}, no such player exists");
                     continue;
                 }
+
+                Console.WriteLine($"Splitting snake {split.OldSnakeName} into {split.NewSnakeName} @ {split.SnakeSegment}");
+
                 player.SplitSnake(split.OldSnakeName, split.NewSnakeName, split.SnakeSegment);
                 _moves.Add(move);
             }
@@ -181,7 +192,7 @@ namespace CommunicationHost.Model
 
                 if(hitPlayer == null) continue;
 
-                var hitSnake = hitPlayer.GetSnakeForLocation(nextLocation);
+                var hitSnake = hitPlayer.GetSnakeNameForLocation(nextLocation);
                 var moveForHitSnake = _moves.FirstOrDefault(m => m.PlayerIdentifier == hitPlayer.Identifier && move.SnakeName == hitSnake);
                 if (moveForHitSnake != null)
                 {
@@ -248,7 +259,9 @@ namespace CommunicationHost.Model
 
         private void HandleSnakeRemove(Player player, string snakeName, bool isSave)
         {
-            _updateMessage.UpdatedCells.AddRange(player.RemoveSnake(snakeName, isSave).Select(x => GetUpdatedCell(x, 0, "")));
+            var emptyAddresses = player.RemoveSnake(snakeName, isSave);
+            emptyAddresses.ForEach(x => _map.SetPlayer(null, x));
+            _updateMessage.UpdatedCells.AddRange(emptyAddresses.Select(x => GetUpdatedCell(x, 0, "")));
             _updateMessage.RemovedSnakes.Add($"{player.Name}:{snakeName}");
         }
 

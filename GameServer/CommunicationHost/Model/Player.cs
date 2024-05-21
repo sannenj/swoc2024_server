@@ -34,14 +34,21 @@ namespace CommunicationHost.Model
             return _savedSnakeScore + Snakes.Sum(s => s.GetScore());
         }
 
-        public string GetSnakeForLocation(int[] address)
+        public Snake? GetSnakeForLocation(int[] address)
         {
-            return Snakes.FirstOrDefault(s => s.Segments.Any(c => c.Address.SequenceEqual(address)))?.Name;
+            return Snakes.FirstOrDefault(s => s.Segments.Any(c => c.Address.SequenceEqual(address)));
+        }
+
+        public string GetSnakeNameForLocation(int[] address)
+        {
+            var s = GetSnakeForLocation(address);
+            return s?.Name ?? "";
         }
 
         public List<int[]> RemoveSnake(string name, bool isSave = false)
         {
-            Console.WriteLine($"removing snake {name} of player {Name}");
+            String actionName = isSave ? "Saving" : "Removing";
+            Console.WriteLine($"{actionName} snake {name} of player {Name}");
             var result = new List<int[]>();
             lock (Snakes)
             {
@@ -80,7 +87,14 @@ namespace CommunicationHost.Model
             {
                 lock (Snakes)
                 {
-                    Snakes.Add(oldSnake.Split(snakeCell, newName));
+                    if (oldSnake.Length <= snakeCell)
+                    {
+                        Console.WriteLine($"Refuse to split snake {oldSnake.Name} of player {Name}. Length:{oldSnake.Length}, Cell:{snakeCell}");
+                    }
+                    else
+                    {
+                        Snakes.Add(oldSnake.Split(snakeCell, newName));
+                    }
                 }
             }
         }

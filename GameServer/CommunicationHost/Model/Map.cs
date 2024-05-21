@@ -1,4 +1,5 @@
 ﻿using PlayerInterface;
+using System.Diagnostics;
 
 namespace CommunicationHost.Model
 {
@@ -12,6 +13,24 @@ namespace CommunicationHost.Model
             MapArray = Array.CreateInstance(typeof(Cell), sideLengths);
             LoopTings(MapArray, sideLengths, new int[sideLengths.Length], 0, InitCell);
             SideLengths = sideLengths;
+        }
+
+        public void VerifyCurrentGamestate(List<Player> players)
+        {
+            void checkIfCellWithPlayerHasSnake(Array array, int[] index)
+            {
+                var cell = array.GetValue(index) as Cell;
+                Debug.Assert(cell != null);
+                if (cell.Player != null)
+                {
+                    Debug.Assert(cell.Occupied);
+                    var snake = cell.Player.GetSnakeForLocation(cell.Address);
+                    Debug.Assert(snake != null);
+                    Debug.Assert(!snake.Name.Equals(""));
+                }
+            }
+
+            LoopTings(MapArray, SideLengths, new int[SideLengths.Length], 0, checkIfCellWithPlayerHasSnake);
         }
 
         public List<UpdatedCell> GetCurrentGamestate()
