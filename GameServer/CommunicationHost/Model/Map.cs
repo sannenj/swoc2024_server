@@ -15,14 +15,22 @@ namespace CommunicationHost.Model
             SideLengths = sideLengths;
         }
 
+        [Conditional("DEBUG")]
         public void VerifyCurrentGamestate(List<Player> players)
         {
-            void checkIfCellWithPlayerHasSnake(Array array, int[] index)
+            HashSet<string> addresses = new();
+
+            void verifyCell(Array array, int[] index)
             {
                 var cell = array.GetValue(index) as Cell;
                 Debug.Assert(cell != null);
                 if (cell.Player != null)
                 {
+                    Debug.Assert(players.Contains(cell.Player));
+                    string cellAddressString = string.Join(",", cell.Address);
+                    Debug.Assert(cellAddressString != null);
+                    Debug.Assert(!addresses.Contains(cellAddressString));
+                    addresses.Add(cellAddressString);
                     Debug.Assert(cell.Occupied);
                     var snake = cell.Player.GetSnakeForLocation(cell.Address);
                     Debug.Assert(snake != null);
@@ -30,7 +38,7 @@ namespace CommunicationHost.Model
                 }
             }
 
-            LoopTings(MapArray, SideLengths, new int[SideLengths.Length], 0, checkIfCellWithPlayerHasSnake);
+            LoopTings(MapArray, SideLengths, new int[SideLengths.Length], 0, verifyCell);
         }
 
         public List<UpdatedCell> GetCurrentGamestate()
@@ -106,7 +114,7 @@ namespace CommunicationHost.Model
 
         public int[] RandomAddress()
         {
-            Random random = new Random();
+            Random random = new();
             var address = new int[SideLengths.Length];
 
             for (int i = 0; i < SideLengths.Length; i++)
