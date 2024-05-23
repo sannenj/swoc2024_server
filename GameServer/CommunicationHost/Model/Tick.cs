@@ -109,6 +109,15 @@ namespace CommunicationHost.Model
                     Console.WriteLine($"Unable to process moves for player with Id: {moveGroup.Key}, no such player exists");
                     continue;
                 }
+                // Remove moves of snakes that no longer exist
+                foreach (var snakeMove in moveGroup)
+                {
+                    if (!player.Snakes.Select(x => x.Name).Contains(snakeMove.SnakeName))
+                    {
+                        Console.WriteLine($"Removing move for non existing snake {snakeMove.SnakeName} of player {player.Name}");
+                        removes.Add(snakeMove);
+                    }
+                }
                 foreach (var snake in player.Snakes)
                 {
                     var numMoves = moveGroup.Count(m => m.SnakeName == snake.Name);
