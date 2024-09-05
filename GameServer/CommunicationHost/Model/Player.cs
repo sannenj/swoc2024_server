@@ -9,11 +9,14 @@ namespace CommunicationHost.Model
         public Cell HomeBase;
         public List<Snake> Snakes = new List<Snake>();
         private long _savedSnakeScore;
+        public bool isDone
+        { get; set; }
 
         public Player(string name, string identifier, CancellationToken token) : base(name, identifier, token)
         {
+            isDone = false;
         }
-
+   
         public void SpawnSnake(string name)
         {
             var snake = new Snake(name);
