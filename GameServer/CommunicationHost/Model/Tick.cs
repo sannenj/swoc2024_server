@@ -167,6 +167,22 @@ namespace CommunicationHost.Model
                 var saveMoves = moveGroup.Where(m => m.NextLocation.SequenceEqual(playerHome.Address)).ToList();
                 foreach (var move in saveMoves)
                 {
+                    // We were trying to avoid spawning into a cell with food, but there is a chance that we do spawn into food
+                    // Since we do not eat it right away, we do need to eat it at the first home coming
+                    var homeCell = _map.GetCell(playerHome.Address);
+                    if (homeCell.Food != null)
+                    {
+                        var snake = player.GetSnake(move.SnakeName);
+                        if (snake == null)
+                        {
+                            Console.WriteLine($"Unable to process homecoming for snake {move.SnakeName} of player {player.Name}, no such snake exists");
+                            continue;
+                        }
+
+                        snake.Eat();
+                        homeCell.Food = null;
+                    }
+
                     Console.WriteLine($"{player.Name} saved snake {move.SnakeName}");
                     HandleSnakeRemove(player, move.SnakeName, true);
                     removes.Add(move);
