@@ -124,7 +124,7 @@ namespace CommunicationHost.GameEngine
             {
                 for (int i = 0;i < 10; i++) 
                 {
-                    await Task.Delay(1);
+                    await Task.Delay(30);
                     await DoLocked(async () => await _tick.HandlePlayerDoneMoves(_players));
                     bool needToWait = false;
                     foreach (var player in _players)
