@@ -56,6 +56,36 @@ namespace CommunicationHost.Model
             _splits.Add(split);
         }
 
+        public async Task<bool> HandlePlayerDoneMoves(List<Player> players)
+        {
+            bool allPlayersAreDone = true;
+            var removes = new List<Move>();
+            foreach (var moveGroup in _moves.GroupBy(m => m.PlayerIdentifier))
+            {
+                var player = players.FirstOrDefault(p => p.Identifier == moveGroup.Key);
+                if (player == null)
+                {
+                    await Console.Out.WriteLineAsync($"Unable to process moves for player with Id: {moveGroup.Key}, no such player exists");
+                    continue;
+                }
+                // Check for player done move
+                foreach (var snakeMove in moveGroup)
+                {
+                    if (snakeMove.SnakeName == "")
+                    {
+                        await Console.Out.WriteLineAsync($"Player done move of player {player.Name}");
+                        player.isDone = true;
+                        removes.Add(snakeMove);
+                    }
+                    allPlayersAreDone &= !player.isDone;
+                }
+            }
+            removes.ForEach(m => _moves.Remove(m));
+
+            return allPlayersAreDone;
+        }
+
+
         private void HandleDisconnectedPlayers(List<Player> players, List<string> disconnectedPlayers)
         {
             foreach (var player in players.Where(p => disconnectedPlayers.Contains(p.Identifier)))

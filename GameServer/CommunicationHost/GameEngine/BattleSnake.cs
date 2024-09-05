@@ -122,7 +122,29 @@ namespace CommunicationHost.GameEngine
             GameUpdateMessage message = null;
             while (_gameRunning)
             {
-                await Task.Delay(300);
+                for (int i = 0;i < 10; i++) 
+                {
+                    await Task.Delay(1);
+                    await DoLocked(async () => await _tick.HandlePlayerDoneMoves(_players));
+                    bool needToWait = false;
+                    foreach (var player in _players)
+                    {
+                        needToWait = needToWait || !player.isDone;
+                    }
+                    if (!needToWait)
+                    {
+                        break;
+                    }
+                }
+                foreach (var player in _players)
+                {
+                    if (!player.isDone)
+                    {
+                        Console.WriteLine($"Not done: {player.Name}");
+                    }
+                    player.isDone = false;
+                }
+
                 await DoLocked(async () => await _tick.ProcessMoves(_players, disconnectedPlayers));
                 message = _tick.GetMessage();
                 _tick = new Tick(_map);
